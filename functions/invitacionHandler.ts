@@ -1,26 +1,6 @@
 "use strict"
 const database = require("../service/database");
-//const uri = 'mongodb+srv://admin:Jafra2018!@hheisego.zc7y9qf.mongodb.net/?retryWrites=true&w=majority';
 const db = database(process.env.MONGODB_URI);
-/*const MongoClient = require('mongodb').MongoClient;
-const MONGODB_URI = process.env.MONGODB_URI;
-let cachedDb:any = null;
-
-async function connectToDatabase () {
-  console.log('=> connect to database');
-  if (cachedDb) {
-    console.log('=> using cached database instance');
-    return Promise.resolve(cachedDb);
-  }
-  // Connect to our MongoDB database hosted on MongoDB Atlas
-  const client = await MongoClient.connect(MONGODB_URI);
-  // Specify which database we want to use
-  const db = await client.db("QPass-Pro");
-  cachedDb = db;
-  return db;
-}*/
-
-
 
 export const handler = async function(event:any) {
   
@@ -29,6 +9,8 @@ export const handler = async function(event:any) {
     case 'GET' :
       if(event.pathParameters != null){
         return findById(event.pathParameters.idInvitacion);
+      }else{
+        return getAllInvitaciones();
       }
       break;
     case 'POST':
@@ -61,5 +43,20 @@ async function findById(idInvitacion:String) {
   return{
     statusCode: 200,
     body: JSON.stringify(getById),
+  }
+}
+
+async function getAllInvitaciones() {
+  const getAllInvitaciones = await db.getAllInvitaciones();
+  if(getAllInvitaciones === null){
+    return{
+      statusCode: 404,
+      body: 'No existen registros',
+    }
+  }else{
+    return{
+      statusCode: 200,
+      body: JSON.stringify(getAllInvitaciones),
+    }
   }
 }
