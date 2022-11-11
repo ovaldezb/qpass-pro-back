@@ -17,7 +17,7 @@ export class QpassProBackStack extends cdk.Stack {
         ]
       },
       environment:{
-        MONGODB_URI: "mongodb+srv://admin:Jafra2018!@hheisego.zc7y9qf.mongodb.net/QPass-Pro?retryWrites=true&w=majority"
+        MONGODB_URI: "mongodb+srv://<<user>>:<<password>>@<<host>>/<<databse>>?retryWrites=true&w=majority"
       },
       runtime: Runtime.NODEJS_16_X
     }
