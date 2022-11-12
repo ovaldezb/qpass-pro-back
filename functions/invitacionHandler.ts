@@ -1,9 +1,12 @@
 "use strict"
 const database = require("../service/database");
 const db = database(process.env.MONGODB_URI);
+const headers ={
+  'content-type':'application/json',
+  'Access-Control-Allow-Origin': '*'
+};
 
 export const handler = async function(event:any) {
-  
   const method = event.requestContext.httpMethod;
   switch(method){
     case 'GET' :
@@ -31,6 +34,10 @@ async function addInvitacion(event:any) {
   return{
     statusCode: 200,
     body: JSON.stringify(savedInvitacion),
+    headers:{
+      'content-type':'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
   }
 }
 
@@ -42,12 +49,20 @@ async function findById(idInvitacion:String) {
     };
     return{
       statusCode: 404,
-      body: JSON.stringify(errMessage)
+      body: JSON.stringify(errMessage),
+      headers:{
+        'content-type':'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     }  
   }
   return{
     statusCode: 200,
     body: JSON.stringify(getById),
+    headers:{
+      'content-type':'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
   }
 }
 
@@ -57,11 +72,19 @@ async function getAllInvitaciones() {
     return{
       statusCode: 404,
       body: "\'message\':\'No existen registros\'",
+      headers:{
+        'content-type':'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     }
   }else{
     return{
       statusCode: 200,
       body: JSON.stringify(getAllInvitaciones),
+      headers:{
+        'content-type':'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     }
   }
 }
@@ -78,11 +101,13 @@ async function updateInvitacion(event:any) {
     return{
       statusCode: 404,
       body: JSON.stringify(bodyMessage),
+      headers:headers
     }
   }else{
     return{
       statusCode:200,
-      body: JSON.stringify(updateInvitacion)
+      body: JSON.stringify(updateInvitacion),
+      headers:headers,
     }
   }
 }
@@ -96,13 +121,15 @@ async function deleteInvitacion(idInvitacion:String) {
     bodyMessage.message = 'No existen registros';
     return{
       statusCode: 404,
-      body: JSON.stringify(bodyMessage) //"\'message\':\'No existen registros\'",
+      body: JSON.stringify(bodyMessage), //"\'message\':\'No existen registros\'",
+      headers:headers
     }
   }else{
     bodyMessage.message = 'Registro Eliminado'
     return{
       statusCode: 200,
       body: JSON.stringify(bodyMessage),
+      headers:headers
     }
   }
 }
