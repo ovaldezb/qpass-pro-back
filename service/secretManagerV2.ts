@@ -6,7 +6,7 @@ class SecretsManagerV2{
   static async getSecret(){
     const secret_name = "QPASSPRO/MONGODB/CREDENTIALS";
     const client = new SecretsManagerClient({
-      region: "us-east-2",
+      region: "us-east-1",
     });
     let response;
     try {
