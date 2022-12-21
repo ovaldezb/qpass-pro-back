@@ -4,7 +4,6 @@ import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import { join } from 'path';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class QpassProBackStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -17,7 +16,7 @@ export class QpassProBackStack extends cdk.Stack {
         ]
       },
       environment:{
-        MONGODB_URI: "mongodb+srv://<<user>>:<<password>>@<<host>>/<<databse>>?retryWrites=true&w=majority"
+        MONGODB_URI: "mongodb+srv://${user}:${password}@${host}/${database}?retryWrites=true&w=majority"
       },
       runtime: Runtime.NODEJS_16_X
     }
@@ -43,5 +42,17 @@ export class QpassProBackStack extends cdk.Stack {
     singleInvitacion.addMethod('GET');
     singleInvitacion.addMethod('PUT');
     singleInvitacion.addMethod('DELETE');
+    
+    /*const templatedSecret = new cdk.aws_secretsmanager.Secret(this, 'ReadSecret', {
+      secretName:'QPASSPRO/MONGODB/CREDENTIALS',
+      secretObjectValue:{
+        user: SecretValue.unsafePlainText('*****'),
+        password: SecretValue.unsafePlainText('******'),
+        host:SecretValue.unsafePlainText('****'),
+        database:SecretValue.unsafePlainText('****')
+      }
+    });
+    templatedSecret.grantRead(qpasProFunction);*/
+    
   }
 }

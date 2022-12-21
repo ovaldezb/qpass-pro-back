@@ -1,12 +1,19 @@
 "use strict"
 const database = require("../service/database");
 const db = database(process.env.MONGODB_URI);
+const SecretsManager = require('../service/secretManagerV2');
+
 const headers ={
   'content-type':'application/json',
   'Access-Control-Allow-Origin': '*'
 };
 
 export const handler = async function(event:any) {
+  //console.log(await SecretsManager.getSecret());
+  const secrets = JSON.parse(await SecretsManager.getSecret());
+  console.log('Secrets:'+secrets.user);
+  console.log('Secrets:'+secrets.pass);
+  
   const method = event.requestContext.httpMethod;
   switch(method){
     case 'GET' :

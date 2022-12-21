@@ -21,6 +21,9 @@
     "typescript": "~3.9.7"
   },
   "dependencies": {
+    "@aws-cdk/aws-iam": "^1.180.0",
+    "@aws-cdk/aws-secretsmanager": "^1.180.0",
+    "@aws-sdk/client-secrets-manager": "^3.209.0",
     "@types/aws-lambda": "^8.10.108",
     "aws-cdk-lib": "2.50.0",
     "constructs": "^10.0.0",
