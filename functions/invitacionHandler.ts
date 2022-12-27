@@ -9,10 +9,7 @@ const headers ={
 };
 
 export const handler = async function(event:any) {
-  //console.log(await SecretsManager.getSecret());
-  const secrets = JSON.parse(await SecretsManager.getSecret());
-  console.log('Secrets:'+secrets.user);
-  console.log('Secrets:'+secrets.pass);
+
   
   const method = event.requestContext.httpMethod;
   switch(method){
