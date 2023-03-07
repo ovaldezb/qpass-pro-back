@@ -9,28 +9,28 @@ export class QpassProBackStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const nodeJsFunctionProps : NodejsFunctionProps = {
-      bundling:{
-        externalModules :[
+    const nodeJsFunctionProps: NodejsFunctionProps = {
+      bundling: {
+        externalModules: [
           'aws-sdk'
         ]
       },
-      environment:{
+      environment: {
         MONGODB_URI: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}?retryWrites=true&w=majority`
       },
       runtime: Runtime.NODEJS_16_X
     }
-    const qpasProFunction = new NodejsFunction(this,'InvitadosFunction',{
-      functionName:'invitadosFunction',
-      entry: join(__dirname,'/../functions/invitacionHandler.ts'),
+    const qpasProFunction = new NodejsFunction(this, 'InvitadosFunction', {
+      functionName: 'invitadosFunction',
+      entry: join(__dirname, '/../functions/invitacionHandler.ts'),
       ...nodeJsFunctionProps
     });
 
-    const apiGw = new LambdaRestApi(this,'InvitacionApiGw',{
-      restApiName:'Invitacion Service',
+    const apiGw = new LambdaRestApi(this, 'InvitacionApiGw', {
+      restApiName: 'Invitacion Service',
       handler: qpasProFunction,
       proxy: false,
-      deployOptions:{
+      deployOptions: {
         stageName: 'dev'
       }
     });
@@ -42,7 +42,7 @@ export class QpassProBackStack extends cdk.Stack {
     singleInvitacion.addMethod('GET');
     singleInvitacion.addMethod('PUT');
     singleInvitacion.addMethod('DELETE');
-    
+
     /*const templatedSecret = new cdk.aws_secretsmanager.Secret(this, 'ReadSecret', {
       secretName:'QPASSPRO/MONGODB/CREDENTIALS',
       secretObjectValue:{
@@ -53,6 +53,6 @@ export class QpassProBackStack extends cdk.Stack {
       }
     });
     templatedSecret.grantRead(qpasProFunction);*/
-    
+
   }
 }

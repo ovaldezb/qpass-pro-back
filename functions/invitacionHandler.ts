@@ -2,7 +2,7 @@
 const database = require("../service/database");
 const db = database(process.env.MONGODB_URI);
 //const SecretsManager = require('../service/secretManagerV2');
-var SendmailController = require('../nodemailer');
+var SendmailController = require('nodemailer');
 
 const headers ={
   'content-type':'application/json',
