@@ -4,6 +4,7 @@
   "main": "invitacionHandler.ts",
   "dependencies": {
     "mongodb": "^4.11.0",
-    "mongoose": "^6.7.2"
+    "mongoose": "^6.7.2",
+    "nodemailer": "^6.9.1"
   }
 }

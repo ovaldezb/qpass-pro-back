@@ -1,7 +1,8 @@
 "use strict"
 const database = require("../service/database");
 const db = database(process.env.MONGODB_URI);
-const SecretsManager = require('../service/secretManagerV2');
+//const SecretsManager = require('../service/secretManagerV2');
+var SendmailController = require('../nodemailer');
 
 const headers ={
   'content-type':'application/json',
@@ -10,9 +11,9 @@ const headers ={
 
 export const handler = async function(event:any) {
   //console.log(await SecretsManager.getSecret());
-  const secrets = JSON.parse(await SecretsManager.getSecret());
-  console.log('Secrets:'+secrets.user);
-  console.log('Secrets:'+secrets.pass);
+  //const secrets = JSON.parse(await SecretsManager.getSecret());
+  //console.log('Secrets:'+secrets.user);
+  //console.log('Secrets:'+secrets.pass);
   
   const method = event.requestContext.httpMethod;
   switch(method){
@@ -37,7 +38,8 @@ export const handler = async function(event:any) {
 async function addInvitacion(event:any) {
   const body = JSON.parse(event.body);
   const savedInvitacion = await db.create(body);
-  
+  var response = SendmailController.sendEmail(body);
+  console.log(response);
   return{
     statusCode: 200,
     body: JSON.stringify(savedInvitacion),
