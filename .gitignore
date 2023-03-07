@@ -6,3 +6,6 @@ node_modules
 .cdk.staging
 cdk.out
 cdk.js
+node_env
+.env
+.python-version
