@@ -31,9 +31,11 @@ var controller = {
     };
     transporter.sendMail(message)
             .then((info: any)=>{
+              console.log(info);
               return 200; 
             })
             .catch((err: string)=>{
+              console.log(err);
               return 400; 
             });    
     transporter.close();
