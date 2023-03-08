@@ -25,19 +25,23 @@ var controller = {
     const message = {             
       from: 'reparaciones@tdm.mx', // List of recipients
       to: 'omar.valdez.becerril@gmail.com',
-      //cc:['reparaciones@tdm.mx','manuel.leon@tecno-dinamica.com'],
+      cc:['marianasari@gmail.com'],
       subject: 'QPASS Pro Invitacion ', // Subject line
       html: '<p>Estimado(a): <strong> usuario </strong></p>'
     };
-    transporter.sendMail(message)
-            .then((info: any)=>{
-              console.log(info);
-              return 200; 
-            })
-            .catch((err: string)=>{
-              console.log(err);
-              return 400; 
-            });    
+    transporter.sendMail(message, function(err:any, info:any){
+      if (err) {
+          console.log('ERRO');
+          console.log(err.message);
+          
+      }
+      console.log("messageId",info.messageId);
+      console.log("envelope", info.envelope);
+      console.log("accepted", info.accepted);
+      console.log("rejected", info.rejected);
+      console.log("pending", info.pending);
+
+  });
     transporter.close();
   }
 }
