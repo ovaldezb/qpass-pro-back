@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "invitacionHandler.ts",
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.287.0",
     "mongodb": "^4.11.0",
     "mongoose": "^6.7.2",
     "nodemailer": "^6.9.1"

@@ -1,8 +1,9 @@
 "use strict"
+import  { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 const database = require("../service/database");
 const db = database(process.env.MONGODB_URI);
-//const SecretsManager = require('../service/secretManagerV2');
-var SendmailController = require('./nodemailer_implementation');
+const snsClient = new SNSClient({});
+
 
 const headers ={
   'content-type':'application/json',
@@ -12,6 +13,7 @@ const headers ={
 export const handler = async function(event:any) {
   
   const method = event.requestContext.httpMethod;
+  //console.log(event);
   switch(method){
     case 'GET' :
       if(event.pathParameters != null){
@@ -32,10 +34,16 @@ export const handler = async function(event:any) {
 }
 
 async function addInvitacion(event:any) {
+  console.log('Add Invitacion');
   const body = JSON.parse(event.body);
+  //ec.send(body);
   const savedInvitacion = await db.create(body);
-  var response = SendmailController.sendEmail(body);
-  console.log(response);
+  var params = {
+    Message: JSON.stringify(body),
+    TopicArn: process.env.TOPIC_ARN
+  }
+  const data = await snsClient.send(new PublishCommand(params));
+  console.log(data);
   return{
     statusCode: 200,
     body: JSON.stringify(savedInvitacion),
