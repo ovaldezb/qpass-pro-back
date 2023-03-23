@@ -1,12 +1,21 @@
 var nodemailer1 = require('nodemailer')
 var handlebars = require('handlebars')
+const crypto = require('crypto');
+const algorithm = 'aes-256-cbc'; //Using AES encryption
+const key = crypto.randomBytes(32);
+const iv = crypto.randomBytes(16);
+function encrypt(text: string) {
+  let cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
+}
 var email_html = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Apartment Invitation</title>
     <style>
       /* Add your custom CSS styles here */
       body {
@@ -86,11 +95,16 @@ exports.handler = (event: any, context: any, callback: any) => {
   console.log('Recieved Event:' + JSON.stringify(event, null, 4));
   var message = event.Records[0].Sns.Message;
   console.log(message);
+  
   var message = JSON.parse(message);
+  var cadenaEncriptada = encrypt(JSON.stringify(message));
+  console.log(cadenaEncriptada.encryptedData);
+  console.log(cadenaEncriptada.iv)
   var template = handlebars.compile(email_html);
+  
   var replacements = {
     anfitrion: message.anfitrion,
-    qr_url: 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=youtu.be/dQw4w9WgXcQ&choe=UTF-8',
+    qr_url: 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl='+cadenaEncriptada.encryptedData+'&choe=UTF-8',
     lugar: message.lugar,
     fechaEvento:message.fechaEvento,
     horaEvento: message.horaEvento,
@@ -101,7 +115,7 @@ exports.handler = (event: any, context: any, callback: any) => {
 
   let mailOptions = {
     from: 'soporte@gecoplus.mx',
-    to: 'marianasari@gmail.com,hheisego@cisco.com,omar.valdez.becerril@gmail.com',
+    to: message.correoInvitado,
     subject: "Invitacion para "+message.asunto,
     html: htmlToSend
   };
