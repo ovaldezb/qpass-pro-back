@@ -13,7 +13,6 @@ const headers ={
 export const handler = async function(event:any) {
   
   const method = event.requestContext.httpMethod;
-  //console.log(event);
   switch(method){
     case 'GET' :
       if(event.pathParameters != null){
@@ -36,8 +35,8 @@ export const handler = async function(event:any) {
 async function addInvitacion(event:any) {
   console.log('Add Invitacion');
   const body = JSON.parse(event.body);
-  //ec.send(body);
   const savedInvitacion = await db.create(body);
+  console.log(savedInvitacion);
   var params = {
     Message: JSON.stringify(body),
     TopicArn: process.env.TOPIC_ARN

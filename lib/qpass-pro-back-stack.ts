@@ -24,12 +24,24 @@ export class QpassProBackStack extends cdk.Stack {
         ]
       },
       environment: {
+        MONGODB_URI: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+        TOPIC_ARN:snsTopic.topicArn
+      },
+      runtime: Runtime.NODEJS_16_X
+    }
+    const nodeJsEmailProps: NodejsFunctionProps = {
+      bundling: {
+        externalModules: [
+          'aws-sdk'
+        ]
+      },
+      environment: {
+        CRYPTO_KEY:`${process.env.CRYPTO_KEY}`,
+        CRYPTO_IV:`${process.env.CRYPTO_IV}`,
         EMAIL_USER:`${process.env.EMAIL_USER}`,
         EMAIL_PASS:`${process.env.EMAIL_PASS}`,
         EMAIL_HOST:`${process.env.EMAIL_HOST}`,
-        EMAIL_PORT:`${process.env.EMAIL_PORT}`,
-        MONGODB_URI: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
-        TOPIC_ARN:snsTopic.topicArn
+        EMAIL_PORT:`${process.env.EMAIL_PORT}`
       },
       runtime: Runtime.NODEJS_16_X
     }
@@ -49,7 +61,7 @@ export class QpassProBackStack extends cdk.Stack {
     const emailSendFunction = new NodejsFunction(this,'EnvioEmail',{
       functionName:'EnvioEmail',
       entry: join(__dirname,'/../functions/emailHandler.ts'),
-      ...nodeJsFunctionProps
+      ...nodeJsEmailProps
     });
     
     snsTopic.addSubscription(new subs.LambdaSubscription(emailSendFunction));

@@ -2,10 +2,11 @@ var nodemailer1 = require('nodemailer')
 var handlebars = require('handlebars')
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc'; //Using AES encryption
-const key = crypto.randomBytes(32);
-const iv = crypto.randomBytes(16);
+const key = process.env.CRYPTO_KEY;//crypto.randomBytes(32);
+//const iv = crypto.randomBytes(16);
+const iv = Buffer.from('poneraquielIV','utf8');
 function encrypt(text: string) {
-  let cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+  let cipher = crypto.createCipheriv(algorithm, key, iv);
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
@@ -57,12 +58,13 @@ var email_html = `
       <p>Estas cordialmente invitado a un evento, el cual se llevará a cabo en {{ lugar }}, el día {{ fechaEvento }} a las {{ horaEvento}}.</p>
       <p>Por favor considera las reglas de nuestro condominio:</p>
       <ul>
+        <li>La invitación es válida únicamente para la fecha indicada</li>
         <li>No fumar en zonas cerradas.</li>
         <li>No se permitirá música despues de las 10 pm.</li>
         <li>No se permiten mascotas.</li>
       </ul>
       <p>Para poder ingresar al complejo, favor de presentar el siguiente código QR en seguridad:</p>
-      <img class="qr-code" src="{{ qr_url }}" alt="QR Code" />
+      <img class="qr-code" src="{{ qr_url }}" alt="QR Code" width="500"/>
       <p>Esperamos recibirlo pronto!</p>
       <p>Saludos,</p>
       <p>{{ anfitrion }}</p>
@@ -91,15 +93,11 @@ var transporter = nodemailer1.createTransport({
 });
 
 exports.handler = (event: any, context: any, callback: any) => {
-  console.log('Enviando correo');
   console.log('Recieved Event:' + JSON.stringify(event, null, 4));
   var message = event.Records[0].Sns.Message;
-  console.log(message);
   
   var message = JSON.parse(message);
   var cadenaEncriptada = encrypt(JSON.stringify(message));
-  console.log(cadenaEncriptada.encryptedData);
-  console.log(cadenaEncriptada.iv)
   var template = handlebars.compile(email_html);
   
   var replacements = {
@@ -128,8 +126,13 @@ exports.handler = (event: any, context: any, callback: any) => {
     }
   });
 
-  var response = transporter.sendMail(mailOptions);
-  console.log(response);
+  var response = transporter.sendMail(mailOptions)
+                  .then((res: any)=>{
+                    console.log(res);
+                  })
+                  .catch((err: any)=>{
+                    console.log(err);
+                  });
   transporter.close();
 
   return {
@@ -141,15 +144,4 @@ exports.handler = (event: any, context: any, callback: any) => {
       'Access-Control-Allow-Methods': 'POST'
     }
   }
-}
-
-function titleCase(str: string) {
-  var splitStr = str.toLowerCase().split(' ');
-  for (var i = 0; i < splitStr.length; i++) {
-    // You do not need to check if i is larger than splitStr length, as your for does that for you
-    // Assign it back to the array
-    splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
-  }
-  // return the joined string
-  return splitStr.join(' ');
 }
