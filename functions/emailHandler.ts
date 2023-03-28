@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const algorithm = 'aes-256-cbc'; //Using AES encryption
 const key = process.env.CRYPTO_KEY;//crypto.randomBytes(32);
 //const iv = crypto.randomBytes(16);
-const iv = Buffer.from('poneraquielIV','utf8');
+const iv = Buffer.from('','utf8');
 function encrypt(text: string) {
   let cipher = crypto.createCipheriv(algorithm, key, iv);
   let encrypted = cipher.update(text);
