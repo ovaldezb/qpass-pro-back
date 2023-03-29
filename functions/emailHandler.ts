@@ -2,9 +2,11 @@ var nodemailer1 = require('nodemailer')
 var handlebars = require('handlebars')
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc'; //Using AES encryption
-const key = process.env.CRYPTO_KEY;//crypto.randomBytes(32);
-//const iv = crypto.randomBytes(16);
-const iv = Buffer.from('','utf8');
+const crypto_key = process.env.CRYPTO_KEY ? process.env.CRYPTO_KEY : '';
+const crypto_iv = process.env.CRYPTO_IV ? process.env.CRYPTO_IV : '';
+const key = Buffer.from(crypto_key,'hex');//crypto.randomBytes(32);
+
+const iv = Buffer.from(crypto_iv,'hex');
 function encrypt(text: string) {
   let cipher = crypto.createCipheriv(algorithm, key, iv);
   let encrypted = cipher.update(text);
@@ -25,7 +27,7 @@ var email_html = `
         padding: 0;
       }
       .qr-code {
-        max-width: 200px;
+        max-width: 500px;
         margin: 10px;
       }
       
