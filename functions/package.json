@@ -4,8 +4,11 @@
   "main": "invitacionHandler.ts",
   "dependencies": {
     "@aws-sdk/client-sns": "^3.287.0",
+    "axios": "^1.3.5",
     "crypto": "^1.0.1",
     "handlebars": "^4.7.7",
+    "jsonwebtoken": "^9.0.0",
+    "jwk-to-pem": "^2.0.5",
     "mongodb": "^4.11.0",
     "mongoose": "^6.7.2",
     "nodemailer": "^6.9.1"
