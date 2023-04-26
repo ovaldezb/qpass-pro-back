@@ -1,4 +1,4 @@
-"use strict"
+
 import  { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 const database = require("../service/database");
 const db = database(process.env.MONGODB_URI);
@@ -6,8 +6,10 @@ const snsClient = new SNSClient({});
 
 
 const headers ={
-  'content-type':'application/json',
-  'Access-Control-Allow-Origin': '*'
+    'Access-Control-Allow-Origin' : '*',
+    'Access-Control-Allow-Headers':'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+    'Access-Control-Allow-Credentials' : true,
+    'Content-Type': 'application/json'
 };
 
 export const handler = async function(event:any) {
@@ -33,23 +35,19 @@ export const handler = async function(event:any) {
 }
 
 async function addInvitacion(event:any) {
-  console.log('Add Invitacion');
+  
   const body = JSON.parse(event.body);
-  const savedInvitacion = await db.create(body);
-  console.log(savedInvitacion);
+  const savedInvitacion =  await db.create(body);
+  delete savedInvitacion.__v;
   var params = {
-    Message: JSON.stringify(body),
+    Message: JSON.stringify(savedInvitacion),
     TopicArn: process.env.TOPIC_ARN
   }
   const data = await snsClient.send(new PublishCommand(params));
-  console.log(data);
   return{
     statusCode: 200,
     body: JSON.stringify(savedInvitacion),
-    headers:{
-      'content-type':'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
+    headers:headers
   }
 }
 
@@ -62,19 +60,13 @@ async function findById(idInvitacion:String) {
     return{
       statusCode: 404,
       body: JSON.stringify(errMessage),
-      headers:{
-        'content-type':'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+      headers:headers
     }  
   }
   return{
     statusCode: 200,
     body: JSON.stringify(getById),
-    headers:{
-      'content-type':'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
+    headers:headers
   }
 }
 
@@ -84,19 +76,13 @@ async function getAllInvitaciones() {
     return{
       statusCode: 404,
       body: "\'message\':\'No existen registros\'",
-      headers:{
-        'content-type':'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+      headers: headers
     }
   }else{
     return{
       statusCode: 200,
       body: JSON.stringify(getAllInvitaciones),
-      headers:{
-        'content-type':'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+      headers:headers
     }
   }
 }

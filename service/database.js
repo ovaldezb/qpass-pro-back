@@ -1,9 +1,10 @@
-'use strict'
+
 const mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
 const { Schema } = mongoose;
 
 var InvitacionSchema = Schema({
+    id:String,
     anfitrion: {type:String},
     asunto:String,
     duracion:Number,
@@ -14,7 +15,15 @@ var InvitacionSchema = Schema({
     horaEvento:String,
     detalle:String,
     lugar:String,
-    notificarEntrada:Boolean
+    notificarEntrada:Boolean,
+    placas: String,
+    tarjeton: String,
+    horaIngreso: Date,
+    dejaId: Boolean,
+    esRecurrente:Boolean,
+    numRepeticiones:Number,
+    horaCreacion: Date
+
 });
 
 const Invitacion  = mongoose.model('Invitacion',InvitacionSchema);
@@ -41,9 +50,13 @@ const database = (mongoUri) =>{
         horaEvento : params.horaEvento,
         detalle : params.detalle,
         lugar : params.lugar,
-        notificarEntrada : params.notificarEntrada
-      });
-      return invitacion.save();
+        notificarEntrada : params.notificarEntrada,
+        esRecurrente: params.esRecurrente,
+        numRepeticiones:params.numRepeticiones,
+        horaCreacion: new Date()
+      }).save();
+
+      return invitacion;
     },
     getById:(idInvitacion)=>{
       return Invitacion.findById(idInvitacion).then((response)=>{

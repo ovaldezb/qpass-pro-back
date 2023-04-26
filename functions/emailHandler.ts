@@ -5,7 +5,6 @@ const algorithm = 'aes-256-cbc'; //Using AES encryption
 const crypto_key = process.env.CRYPTO_KEY ? process.env.CRYPTO_KEY : '';
 const crypto_iv = process.env.CRYPTO_IV ? process.env.CRYPTO_IV : '';
 const key = Buffer.from(crypto_key,'hex');//crypto.randomBytes(32);
-
 const iv = Buffer.from(crypto_iv,'hex');
 function encrypt(text: string) {
   let cipher = crypto.createCipheriv(algorithm, key, iv);
