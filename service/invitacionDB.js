@@ -1,6 +1,4 @@
-
 const mongoose = require('mongoose');
-//var Schema = mongoose.Schema;
 const { Schema } = mongoose;
 
 var InvitacionSchema = Schema({
@@ -28,7 +26,7 @@ var InvitacionSchema = Schema({
 
 const Invitacion  = mongoose.model('Invitacion',InvitacionSchema);
 
-const database = (mongoUri) =>{
+const invitacionDB = (mongoUri) =>{
   const connectionHandler = mongoose.connect(mongoUri,{
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -72,8 +70,7 @@ const database = (mongoUri) =>{
     updateInvitacion:(idInvitacion, params)=>{
       return Invitacion.findOneAndUpdate({_id:idInvitacion},params,{'new':true});
     }
-
   }
 };
 
-module.exports = database;
+module.exports = invitacionDB;

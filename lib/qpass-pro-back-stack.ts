@@ -17,7 +17,7 @@ export class QpassProBackStack extends cdk.Stack {
       displayName:'Email Topic'
     });
 
-    const nodeJsFunctionProps: NodejsFunctionProps = {
+    const nodeJsInvitacionProps: NodejsFunctionProps = {
       bundling: {
         externalModules: [
           'aws-sdk'
@@ -29,6 +29,18 @@ export class QpassProBackStack extends cdk.Stack {
       },
       runtime: Runtime.NODEJS_16_X
     }
+    const nodeJsCondominiosProps: NodejsFunctionProps = {
+      bundling:{
+        externalModules:[
+          'aws-sdk'
+        ]
+      },
+      environment:{
+        MONGODB_URI: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+      },
+      runtime: Runtime.NODEJS_16_X
+    }
+
     const nodeJsEmailProps: NodejsFunctionProps = {
       bundling: {
         externalModules: [
@@ -46,9 +58,15 @@ export class QpassProBackStack extends cdk.Stack {
       runtime: Runtime.NODEJS_16_X
     }
     const invitacionFunction = new NodejsFunction(this, 'InvitadosFunction', {
-      functionName: 'invitadosFunction',
+      functionName: 'InvitadosFunction',
       entry: join(__dirname, '/../functions/invitacionHandler.ts'),
-      ...nodeJsFunctionProps
+      ...nodeJsInvitacionProps
+    });
+
+    const condominioFunction = new NodejsFunction(this,'CondominiosFunction',{
+      functionName:'CondominiosFunction',
+      entry:join(__dirname,'/../functions/condominiosHandler.ts'),
+      ...nodeJsCondominiosProps
     });
 
     const snsTopicPolicy = new iam.PolicyStatement({
@@ -66,7 +84,7 @@ export class QpassProBackStack extends cdk.Stack {
     
     snsTopic.addSubscription(new subs.LambdaSubscription(emailSendFunction));
 
-    const apiGw = new LambdaRestApi(this, 'InvitacionApiGw', {
+    const apiGwInvitacion = new LambdaRestApi(this, 'InvitacionApiGw', {
       restApiName: 'Invitacion Service',
       handler: invitacionFunction,
       proxy: false,
@@ -74,6 +92,31 @@ export class QpassProBackStack extends cdk.Stack {
         stageName: 'dev'
       }
     });
+    
+    const invitacion = apiGwInvitacion.root.addResource('invitacion');
+    invitacion.addMethod('GET');
+    invitacion.addMethod('POST');
+    const singleInvitacion = invitacion.addResource('{idInvitacion}');
+    singleInvitacion.addMethod('GET');
+    singleInvitacion.addMethod('PUT');
+    singleInvitacion.addMethod('DELETE');
+
+    const apiGwCondiminio = new LambdaRestApi(this,'CondominiosApiGw',{
+      restApiName: 'Condominios Service',
+      handler: condominioFunction,
+      proxy: false,
+      deployOptions:{
+        stageName:'dev'
+      }
+    });
+
+    const condominio = apiGwCondiminio.root.addResource('condominio');
+    condominio.addMethod('GET');
+    condominio.addMethod('POST');
+    const singleCondominio = condominio.addResource('{idCondominio}');
+    singleCondominio.addMethod('GET');
+    singleCondominio.addMethod('PUT');
+    singleCondominio.addMethod('DELETE');
 
     const apiGwEmail = new LambdaRestApi(this,'EmailApiG',{
       restApiName: 'EnvioEmail',
@@ -83,15 +126,8 @@ export class QpassProBackStack extends cdk.Stack {
         stageName:'dev'
       }
     });
+
     const email = apiGwEmail.root.addResource('email');
     email.addMethod('POST');
-    
-    const invitacion = apiGw.root.addResource('invitacion');
-    invitacion.addMethod('GET');
-    invitacion.addMethod('POST');
-    const singleInvitacion = invitacion.addResource('{idInvitacion}');
-    singleInvitacion.addMethod('GET');
-    singleInvitacion.addMethod('PUT');
-    singleInvitacion.addMethod('DELETE');
   }
 }

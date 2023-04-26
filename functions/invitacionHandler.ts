@@ -1,6 +1,6 @@
 
 import  { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-const database = require("../service/database");
+const database = require("../service/invitacionDB");
 const db = database(process.env.MONGODB_URI);
 const snsClient = new SNSClient({});
 
@@ -38,7 +38,7 @@ async function addInvitacion(event:any) {
   
   const body = JSON.parse(event.body);
   const savedInvitacion =  await db.create(body);
-  delete savedInvitacion.__v;
+  
   var params = {
     Message: JSON.stringify(savedInvitacion),
     TopicArn: process.env.TOPIC_ARN
@@ -90,7 +90,6 @@ async function getAllInvitaciones() {
 async function updateInvitacion(event:any) {
   const body = JSON.parse(event.body);
   const idInvitacion = event.pathParameters.idInvitacion;
-  console.log('Actualizando '+idInvitacion);
   const updateInvitacion = await db.updateInvitacion(idInvitacion,body);
   if(updateInvitacion===null){
     let bodyMessage = {
