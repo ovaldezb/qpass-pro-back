@@ -10,7 +10,7 @@ export class CognitoUserPool extends Construct {
 		super(scope, id);
 
 		const userPool = new UserPool(this, 'UserPool', {
-			signInAliases: { username: true, email: true },
+			signInAliases: { email: true },
 			selfSignUpEnabled: true,
 			removalPolicy: RemovalPolicy.DESTROY,
 		});
