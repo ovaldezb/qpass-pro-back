@@ -21,9 +21,13 @@
     "typescript": "~3.9.7"
   },
   "dependencies": {
-    "@types/aws-lambda": "^8.10.108",
+    "@aws-cdk/aws-iam": "^1.180.0",
+    "@aws-cdk/aws-secretsmanager": "^1.180.0",
+    "@aws-sdk/client-secrets-manager": "^3.209.0",
+    "@types/aws-lambda": "^8.10.114",
     "aws-cdk-lib": "2.50.0",
     "constructs": "^10.0.0",
+    "dotenv": "^16.0.3",
     "mongoose": "^6.7.2",
     "source-map-support": "^0.5.21"
   }
