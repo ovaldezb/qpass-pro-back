@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
-var InvitacionSchema = Schema({
+var InvitacionSchema = new Schema({
     id:String,
     anfitrion: {type:String},
     asunto:String,
@@ -26,17 +26,17 @@ var InvitacionSchema = Schema({
 
 const Invitacion  = mongoose.model('Invitacion',InvitacionSchema);
 
-const invitacionDB = (mongoUri) =>{
+const invitacionDB = (mongoUri: string) =>{
   const connectionHandler = mongoose.connect(mongoUri,{
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    //useNewUrlParser: true,
+    //useUnifiedTopology: true,
   });
 
   return {
     close: ()=>{
       mongoose.connection.close();
     },
-    create:(params)=>{
+    create:(params:any)=>{
       const invitacion = new Invitacion({
         anfitrion : params.anfitrion,
         asunto : params.asunto,
@@ -53,21 +53,20 @@ const invitacionDB = (mongoUri) =>{
         numRepeticiones:params.numRepeticiones,
         horaCreacion: new Date()
       }).save();
-
       return invitacion;
     },
-    getById:(idInvitacion)=>{
-      return Invitacion.findById(idInvitacion).then((response)=>{
+    getById:(idInvitacion:String)=>{
+      return Invitacion.findById(idInvitacion).then((response:any)=>{
         return response;
       });
     },
     getAllInvitaciones:()=>{
       return Invitacion.find().sort('_id');
     },
-    deleteInvitacion:(idInvitacion)=>{
+    deleteInvitacion:(idInvitacion:String)=>{
       return Invitacion.findByIdAndDelete({_id:idInvitacion});
     },
-    updateInvitacion:(idInvitacion, params)=>{
+    updateInvitacion:(idInvitacion:String, params:any)=>{
       return Invitacion.findOneAndUpdate({_id:idInvitacion},params,{'new':true});
     }
   }

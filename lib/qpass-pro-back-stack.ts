@@ -41,6 +41,18 @@ export class QpassProBackStack extends cdk.Stack {
       runtime: Runtime.NODEJS_16_X
     }
 
+    const nodeJsUsuarioProps: NodejsFunctionProps = {
+      bundling:{
+        externalModules:[
+          'aws-sdk'
+        ]
+      },
+      environment:{
+        MONGODB_URI: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+      },
+      runtime: Runtime.NODEJS_16_X
+    }
+
     const nodeJsEmailProps: NodejsFunctionProps = {
       bundling: {
         externalModules: [
@@ -69,6 +81,12 @@ export class QpassProBackStack extends cdk.Stack {
       ...nodeJsCondominiosProps
     });
 
+    const usuarioFunction = new NodejsFunction(this,'UsuarioFunction',{
+      functionName:'UsuarioFunction',
+      entry:join(__dirname,'/../functions/usuarioHandler.ts'),
+      ...nodeJsUsuarioProps
+    });
+
     const snsTopicPolicy = new iam.PolicyStatement({
       actions:['sns:publish'],
       resources:['*']
@@ -90,6 +108,17 @@ export class QpassProBackStack extends cdk.Stack {
       proxy: false,
       deployOptions: {
         stageName: 'dev'
+      },
+      defaultCorsPreflightOptions: {
+        allowHeaders: [
+          'Content-Type',
+          'X-Amz-Date',
+          'Authorization',
+          'X-Api-Key',
+        ],
+        allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        allowCredentials: true,
+        allowOrigins: ['*'],
       }
     });
     
@@ -107,6 +136,17 @@ export class QpassProBackStack extends cdk.Stack {
       proxy: false,
       deployOptions:{
         stageName:'dev'
+      },
+      defaultCorsPreflightOptions: {
+        allowHeaders: [
+          'Content-Type',
+          'X-Amz-Date',
+          'Authorization',
+          'X-Api-Key',
+        ],
+        allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        allowCredentials: true,
+        allowOrigins: ['*'],
       }
     });
 
@@ -118,6 +158,35 @@ export class QpassProBackStack extends cdk.Stack {
     singleCondominio.addMethod('PUT');
     singleCondominio.addMethod('DELETE');
 
+    const apiGwUsuario = new LambdaRestApi(this,'UsuarioApiGw',{
+      restApiName: 'Usuario Service',
+      handler: usuarioFunction,
+      proxy: false,
+      deployOptions:{
+        stageName:'dev'
+      },
+      defaultCorsPreflightOptions: {
+        allowHeaders: [
+          'Content-Type',
+          'X-Amz-Date',
+          'Authorization',
+          'X-Api-Key',
+        ],
+        allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        allowCredentials: true,
+        allowOrigins: ['*'],
+      }
+    });
+
+    const usuario = apiGwUsuario.root.addResource('usuario');
+    usuario.addMethod('GET');
+    usuario.addMethod('POST');
+    const singleUsuario = usuario.addResource('{idUsuario}');
+    singleUsuario.addMethod('GET');
+    singleUsuario.addMethod('PUT');
+    singleUsuario.addMethod('DELETE');
+
+    /*
     const apiGwEmail = new LambdaRestApi(this,'EmailApiG',{
       restApiName: 'EnvioEmail',
       handler: emailSendFunction,
@@ -129,5 +198,6 @@ export class QpassProBackStack extends cdk.Stack {
 
     const email = apiGwEmail.root.addResource('email');
     email.addMethod('POST');
+    */
   }
 }
