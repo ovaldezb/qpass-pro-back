@@ -11,16 +11,14 @@ var UsuarioSchema = new Schema({
   tipoUsuario:String,
   fechaNacimiento:String,
   rfcOrcurp: String,
+  correo: String,
   telefono:String
 });
 
 const Usuario  = mongoose.model('Usuario',UsuarioSchema);
 
 const usuarioDB = (mongoUri: string)=>{
-  mongoose.connect(mongoUri,{
-    //useNewUrlParser: true,
-    //useUnifiedTopology: true,
-  });
+  mongoose.connect(mongoUri,{  });
 
   return {
     close: ()=>{
@@ -35,6 +33,7 @@ const usuarioDB = (mongoUri: string)=>{
         tipoUsuario:params.tipoUsuario,
         fechaNacimiento:params.fechaNacimiento,
         rfcOrcurp: params.rfcOrcurp,
+        correo: params.correo,
         telefono:params.telefono
       }).save();
       return usuario;
@@ -42,6 +41,12 @@ const usuarioDB = (mongoUri: string)=>{
     getById:(idUsuario: any)=>{
       return Usuario.findById(idUsuario).then((response)=>{
         return response;
+      });
+    },
+    getUsurioByemail:(correo:string)=>{
+      return Usuario.findOne({correo:correo})
+      .then(response=>{
+        return {usuario:response}
       });
     },
     getAllUsuarios:()=>{
