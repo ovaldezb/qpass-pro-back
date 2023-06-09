@@ -1,12 +1,17 @@
 "use strict"
+import  { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 const database = require("../service/database");
 const db = database(process.env.MONGODB_URI);
+const snsClient = new SNSClient({});
+
+
 const headers ={
   'content-type':'application/json',
   'Access-Control-Allow-Origin': '*'
 };
 
 export const handler = async function(event:any) {
+  
   const method = event.requestContext.httpMethod;
   switch(method){
     case 'GET' :
@@ -28,9 +33,16 @@ export const handler = async function(event:any) {
 }
 
 async function addInvitacion(event:any) {
+  console.log('Add Invitacion');
   const body = JSON.parse(event.body);
   const savedInvitacion = await db.create(body);
-  
+  console.log(savedInvitacion);
+  var params = {
+    Message: JSON.stringify(body),
+    TopicArn: process.env.TOPIC_ARN
+  }
+  const data = await snsClient.send(new PublishCommand(params));
+  console.log(data);
   return{
     statusCode: 200,
     body: JSON.stringify(savedInvitacion),
