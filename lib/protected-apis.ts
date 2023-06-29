@@ -115,6 +115,10 @@ export class ProtectedApis extends Construct {
     email.addMethod("POST");
 
     const invitacion = apiGw.root.addResource("invitacion");
+    invitacion.addCorsPreflight({
+      allowOrigins:['*'],
+      allowMethods:['GET','POST']
+    });
     invitacion.addMethod("GET", new LambdaIntegration(invitacionFunction), {
       authorizer: authCognito,
       authorizationType: AuthorizationType.COGNITO,
@@ -124,6 +128,10 @@ export class ProtectedApis extends Construct {
       authorizationType: AuthorizationType.COGNITO,
     });
     const singleInvitacion = invitacion.addResource("{idInvitacion}");
+    singleInvitacion.addCorsPreflight({
+      allowOrigins:['*'],
+      allowMethods:['GET','DELETE','PUT']
+    });
     singleInvitacion.addMethod(
       "GET",
       new LambdaIntegration(invitacionFunction),
