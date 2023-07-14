@@ -12,10 +12,7 @@ import {
   CognitoUserPoolsAuthorizer,
 } from "aws-cdk-lib/aws-apigateway";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
-import {
-  NodejsFunction,
-  NodejsFunctionProps,
-} from "aws-cdk-lib/aws-lambda-nodejs";
+import { NodejsFunction, NodejsFunctionProps} from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import { join } from "path";
 import { UserPool } from "aws-cdk-lib/aws-cognito";
@@ -59,6 +56,31 @@ export class ProtectedApis extends Construct {
       },
       runtime: Runtime.NODEJS_16_X,
     };
+
+    const nodeJsCondominiosProps: NodejsFunctionProps = {
+      bundling:{
+        externalModules:[
+          'aws-sdk'
+        ]
+      },
+      environment:{
+        MONGODB_URI: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+      },
+      runtime: Runtime.NODEJS_16_X
+    }
+
+    const nodeJsUsuarioProps: NodejsFunctionProps = {
+      bundling:{
+        externalModules:[
+          'aws-sdk'
+        ]
+      },
+      environment:{
+        MONGODB_URI: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_HOST}/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+      },
+      runtime: Runtime.NODEJS_16_X
+    }
+
     const invitacionFunction = new NodejsFunction(this, "InvitadosFunction", {
       functionName: "invitadosFunction",
       entry: join(__dirname, "/../functions/invitacionHandler.ts"),
@@ -80,6 +102,24 @@ export class ProtectedApis extends Construct {
 
     snsTopic.addSubscription(new subs.LambdaSubscription(emailSendFunction));
 
+    const condominioFunction = new NodejsFunction(this,'CondominiosFunction',{
+      functionName:'CondominiosFunction',
+      entry:join(__dirname,'/../functions/condominiosHandler.ts'),
+      ...nodeJsCondominiosProps
+    });
+
+    const usuarioFunction = new NodejsFunction(this,'UsuarioFunction',{
+      functionName:'UsuarioFunction',
+      entry:join(__dirname,'/../functions/usuarioHandler.ts'),
+      ...nodeJsUsuarioProps
+    });
+
+    const bulkFunction = new NodejsFunction(this,'BulkLoad',{
+      functionName:'BulkLoad',
+      entry: join(__dirname,'/../functions/bulkHandler.ts'),
+      ...nodeJsFunctionProps
+    });
+
     const apiGw = new LambdaRestApi(this, "InvitacionApiGw", {
       restApiName: "Invitacion Service",
       handler: invitacionFunction,
@@ -89,14 +129,33 @@ export class ProtectedApis extends Construct {
       },
     });
 
-    const apiGwEmail = new LambdaRestApi(this, "EmailApiG", {
-      restApiName: "EnvioEmail",
-      handler: emailSendFunction,
+    const apiGwCondiminio = new LambdaRestApi(this,'CondominiosApiGw',{
+      restApiName: 'Condominios Service',
+      handler: condominioFunction,
       proxy: false,
-      deployOptions: {
-        stageName: "dev",
-      },
+      deployOptions:{
+        stageName:'dev'
+      }
     });
+
+    const apiGwBulk = new LambdaRestApi(this,'BulkApiG',{
+      restApiName:'Bulk Service',
+      handler: bulkFunction,
+      proxy: false,
+      deployOptions:{
+        stageName:'dev'
+      }
+    });
+
+    const apiGwUsuario = new LambdaRestApi(this,'UsuarioApiGw',{
+      restApiName: 'Usuario Service',
+      handler: usuarioFunction,
+      proxy: false,
+      deployOptions:{
+        stageName:'dev'
+      }
+    });
+
     const userPool = UserPool.fromUserPoolId(
       this,
       "UserPool",
@@ -111,8 +170,26 @@ export class ProtectedApis extends Construct {
       }
     );
 
-    const email = apiGwEmail.root.addResource("email");
-    email.addMethod("POST");
+    const authCognitoCondominio = new CognitoUserPoolsAuthorizer(this,
+      'CondominioAuthorizer',
+      {
+        cognitoUserPools:[userPool]
+      }
+    );
+
+    const authCognitoUsuario = new CognitoUserPoolsAuthorizer(this,
+      'UsuarioAuthorizer',
+      {
+        cognitoUserPools:[userPool]
+      }
+    );
+
+    const authCognitoBulk = new CognitoUserPoolsAuthorizer(this,
+      'bulkAuthorizer',
+      {
+        cognitoUserPools:[userPool]
+      }
+    );
 
     const invitacion = apiGw.root.addResource("invitacion");
     invitacion.addCorsPreflight({
@@ -132,29 +209,109 @@ export class ProtectedApis extends Construct {
       allowOrigins:['*'],
       allowMethods:['GET','DELETE','PUT']
     });
-    singleInvitacion.addMethod(
-      "GET",
-      new LambdaIntegration(invitacionFunction),
+    singleInvitacion.addMethod("GET",new LambdaIntegration(invitacionFunction),
       {
         authorizer: authCognito,
         authorizationType: AuthorizationType.COGNITO,
       }
     );
-    singleInvitacion.addMethod(
-      "PUT",
-      new LambdaIntegration(invitacionFunction),
+    singleInvitacion.addMethod("PUT",new LambdaIntegration(invitacionFunction),
       {
         authorizer: authCognito,
         authorizationType: AuthorizationType.COGNITO,
       }
     );
-    singleInvitacion.addMethod(
-      "DELETE",
-      new LambdaIntegration(invitacionFunction),
+    singleInvitacion.addMethod("DELETE",new LambdaIntegration(invitacionFunction),
       {
         authorizer: authCognito,
         authorizationType: AuthorizationType.COGNITO,
       }
     );
+
+    const condominio = apiGwCondiminio.root.addResource("condominio");
+    condominio.addCorsPreflight({
+      allowOrigins:['*'],
+      allowMethods:['GET','POST']
+    });
+    condominio.addMethod('GET', new LambdaIntegration(condominioFunction),
+    {
+      authorizer: authCognitoCondominio,
+      authorizationType: AuthorizationType.COGNITO
+    });
+    condominio.addMethod('POST', new LambdaIntegration(condominioFunction),
+    {
+      authorizer: authCognitoCondominio,
+      authorizationType: AuthorizationType.COGNITO
+    });
+    const singleCondominio = condominio.addResource("{idCondominio}");
+    singleCondominio.addCorsPreflight({
+      allowOrigins:['*'],
+      allowMethods:['GET','DELETE','PUT']
+    });
+    singleCondominio.addMethod('GET', new LambdaIntegration(condominioFunction),
+    {
+      authorizer: authCognitoCondominio,
+      authorizationType: AuthorizationType.COGNITO
+    });
+    singleCondominio.addMethod('PUT',new LambdaIntegration(condominioFunction),
+    {
+      authorizer: authCognitoCondominio,
+      authorizationType: AuthorizationType.COGNITO
+    });
+    singleCondominio.addMethod('DELETE', new LambdaIntegration(condominioFunction),{
+      authorizer: authCognitoCondominio,
+      authorizationType: AuthorizationType.COGNITO
+    });
+
+    const usuario = apiGwUsuario.root.addResource('usuario');
+    usuario.addCorsPreflight({
+      allowOrigins:['*'],
+      allowMethods:['GET','POST']
+    });
+    usuario.addMethod('GET', new LambdaIntegration(usuarioFunction),
+    {
+      authorizer: authCognitoUsuario,
+      authorizationType: AuthorizationType.COGNITO
+    });
+    usuario.addMethod('POST', new LambdaIntegration(usuarioFunction),
+    {
+      authorizer: authCognitoUsuario,
+      authorizationType: AuthorizationType.COGNITO
+    }
+    );
+    const singleUsuario = usuario.addResource('{idUsuario}');
+    singleUsuario.addCorsPreflight({
+      allowOrigins:['*'],
+      allowMethods:['GET','PUT','DELETE']
+    });
+    singleUsuario.addMethod('GET',new LambdaIntegration(usuarioFunction),
+    {
+      authorizer: authCognitoUsuario,
+      authorizationType: AuthorizationType.COGNITO
+    }
+    );
+    singleUsuario.addMethod('PUT', new LambdaIntegration(usuarioFunction),
+    {
+      authorizer: authCognitoUsuario,
+      authorizationType: AuthorizationType.COGNITO
+    }
+    );
+    singleUsuario.addMethod('DELETE', new LambdaIntegration(usuarioFunction),
+    {
+      authorizer: authCognitoUsuario,
+      authorizationType: AuthorizationType.COGNITO
+    }
+    );
+
+    const bulk = apiGwBulk.root.addResource('bulk');
+    bulk.addCorsPreflight({
+      allowOrigins:['*'],
+      allowMethods:['POST']
+    });
+    bulk.addMethod('POST',new LambdaIntegration(bulkFunction),
+    {
+      authorizer: authCognitoBulk,
+      authorizationType: AuthorizationType.COGNITO
+    });
   }
 }

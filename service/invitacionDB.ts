@@ -1,9 +1,8 @@
-'use strict'
-const mongoose = require('mongoose');
-//var Schema = mongoose.Schema;
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
-var InvitacionSchema = Schema({
+var InvitacionSchema = new Schema({
+    id:String,
     anfitrion: {type:String},
     asunto:String,
     duracion:Number,
@@ -14,22 +13,30 @@ var InvitacionSchema = Schema({
     horaEvento:String,
     detalle:String,
     lugar:String,
-    notificarEntrada:Boolean
+    notificarEntrada:Boolean,
+    placas: String,
+    tarjeton: String,
+    horaIngreso: Date,
+    dejaId: Boolean,
+    esRecurrente:Boolean,
+    numRepeticiones:Number,
+    horaCreacion: Date
+
 });
 
 const Invitacion  = mongoose.model('Invitacion',InvitacionSchema);
 
-const database = (mongoUri) =>{
+const invitacionDB = (mongoUri: string) =>{
   const connectionHandler = mongoose.connect(mongoUri,{
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    //useNewUrlParser: true,
+    //useUnifiedTopology: true,
   });
 
   return {
     close: ()=>{
       mongoose.connection.close();
     },
-    create:(params)=>{
+    create:(params:any)=>{
       const invitacion = new Invitacion({
         anfitrion : params.anfitrion,
         asunto : params.asunto,
@@ -41,26 +48,28 @@ const database = (mongoUri) =>{
         horaEvento : params.horaEvento,
         detalle : params.detalle,
         lugar : params.lugar,
-        notificarEntrada : params.notificarEntrada
-      });
-      return invitacion.save();
+        notificarEntrada : params.notificarEntrada,
+        esRecurrente: params.esRecurrente,
+        numRepeticiones:params.numRepeticiones,
+        horaCreacion: new Date()
+      }).save();
+      return invitacion;
     },
-    getById:(idInvitacion)=>{
-      return Invitacion.findById(idInvitacion).then((response)=>{
+    getById:(idInvitacion:String)=>{
+      return Invitacion.findById(idInvitacion).then((response:any)=>{
         return response;
       });
     },
     getAllInvitaciones:()=>{
       return Invitacion.find().sort('_id');
     },
-    deleteInvitacion:(idInvitacion)=>{
+    deleteInvitacion:(idInvitacion:String)=>{
       return Invitacion.findByIdAndDelete({_id:idInvitacion});
     },
-    updateInvitacion:(idInvitacion, params)=>{
+    updateInvitacion:(idInvitacion:String, params:any)=>{
       return Invitacion.findOneAndUpdate({_id:idInvitacion},params,{'new':true});
     }
-
   }
 };
 
-module.exports = database;
+module.exports = invitacionDB;

@@ -1,6 +1,6 @@
 "use strict"
 import  { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-const database = require("../service/database");
+const database = require("../service/invitacionDB");
 const db = database(process.env.MONGODB_URI);
 const snsClient = new SNSClient({});
 
